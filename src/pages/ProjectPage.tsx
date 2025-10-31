@@ -1,70 +1,49 @@
 // src/pages/ProjectPage.tsx
-import { useParams } from 'react-router-dom';
+// This component is now correct because the types from escrow.ts are updated.
+import { useParams, useNavigate } from 'react-router-dom';
 import { useEscrowContract } from '../hooks/useEscrowContract';
 import Button from '../components/common/Button';
 import ProjectHeader from '../components/project/ProjectHeader';
 import MilestoneTracker from '../components/project/MilestoneTracker';
+import { ContractState } from '../types/escrow';
 
 const ProjectPage = () => {
   const { address } = useParams<{ address: string }>();
+  const navigate = useNavigate();
   const { 
-    details, 
-    isLoading, 
-    error, 
-    fundContract,
-    approveMilestone,
-    submitWork,
-    actionStatus, 
-    isClient,
-    isFreelancer
+    details, isLoading, error, fundContract, acceptAssignment, declineAssignment,
+    approveMilestone, submitWork, rejectMilestone, actionStatus, isClient, isFreelancer 
   } = useEscrowContract(address);
 
+  if (isLoading) return <div>Loading Project...</div>;
+  if (error) return <div className="text-red-400">{error}</div>;
+  if (!details) return <div>Project not found.</div>;
 
-  const handleApprove = async (index: number) => {
-    await approveMilestone(index);
-  }
-
-  const handleSubmitWork = async (index: number, ipfsCid: string) => {
-    await submitWork(index, ipfsCid);
-  }
-
-  if (isLoading) {
-    // A more elegant loading state
-    return (
-      <div className="flex justify-center items-center h-64">
-        <svg className="animate-spin h-8 w-8 text-brand-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="text-center p-10 text-red-400 bg-dark-secondary rounded-lg border border-red-800">{error}</div>;
-  }
-
-  if (!details) {
-    return <div className="text-center p-10">Project not found.</div>;
-  }
+  const handleDecline = async () => {
+    await declineAssignment();
+    navigate('/dashboard');
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <ProjectHeader details={details} contractAddress={address!} />
 
-      {details.currentState === 0 && isClient && ( // State: Created
-        <div className="p-6 bg-dark-secondary rounded-md border border-brand-accent shadow-lg">
+      {details.currentState === ContractState.PendingAcceptance && isFreelancer && (
+        <div className="p-6 bg-dark-secondary rounded-md border border-brand-accent">
+          <h3 className="font-bold text-xl text-brand-primary">New Project Proposal</h3>
+          <p className="text-text-secondary mt-2">The client has proposed a new project for you. Review the terms and milestones below. You must accept to proceed.</p>
+          <div className="flex gap-4 mt-4">
+            <Button onClick={acceptAssignment} isLoading={actionStatus['acceptAssignment'] === 'pending'}>Accept Project</Button>
+            <Button variant="danger" onClick={handleDecline} isLoading={actionStatus['declineAssignment'] === 'pending'}>Decline</Button>
+          </div>
+        </div>
+      )}
+
+      {details.currentState === ContractState.Created && isClient && (
+        <div className="p-6 bg-dark-secondary rounded-md border border-brand-accent">
           <h3 className="font-bold text-xl text-brand-primary">Action Required: Fund Escrow</h3>
-          <p className="text-text-secondary mt-2">
-            To begin the project, you must deposit the total amount of {details.totalAmount} ETH into the secure escrow contract. The funds will be held safely until you approve each milestone.
-          </p>
-          <Button 
-            className="mt-4"
-            onClick={fundContract}
-            isLoading={actionStatus['fund'] === 'pending'}
-          >
-            Fund {details.totalAmount} ETH Now
-          </Button>
+          <p className="text-text-secondary mt-2">The freelancer has accepted. To begin the project, deposit {details.totalAmount} ETH into the secure escrow contract.</p>
+          <Button className="mt-4" onClick={fundContract} isLoading={actionStatus['fund'] === 'pending'}>Fund {details.totalAmount} ETH Now</Button>
         </div>
       )}
 
@@ -73,8 +52,9 @@ const ProjectPage = () => {
         isClient={isClient}
         isFreelancer={isFreelancer}
         contractState={details.currentState}
-        approveMilestone={handleApprove}
-        submitWork={handleSubmitWork}
+        approveMilestone={approveMilestone}
+        submitWork={submitWork}
+        rejectMilestone={rejectMilestone}
         actionStatus={actionStatus}
       />
     </div>

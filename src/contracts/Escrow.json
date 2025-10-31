@@ -27,6 +27,32 @@
 	},
 	{
 		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "freelancer",
+				"type": "address"
+			}
+		],
+		"name": "AssignmentAccepted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "freelancer",
+				"type": "address"
+			}
+		],
+		"name": "AssignmentDeclined",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
 		"inputs": [],
 		"name": "ContractCompleted",
 		"type": "event"
@@ -81,6 +107,25 @@
 			},
 			{
 				"indexed": false,
+				"internalType": "string",
+				"name": "reason",
+				"type": "string"
+			}
+		],
+		"name": "MilestoneRejected",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "milestoneIndex",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
 				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
@@ -107,6 +152,13 @@
 		],
 		"name": "WorkSubmitted",
 		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "acceptAssignment",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"inputs": [
@@ -145,6 +197,13 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "declineAssignment",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -244,6 +303,11 @@
 						"internalType": "string",
 						"name": "ipfsCid",
 						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "rejectionReason",
+						"type": "string"
 					}
 				],
 				"internalType": "struct Escrow.Milestone",
@@ -296,6 +360,11 @@
 				"internalType": "string",
 				"name": "ipfsCid",
 				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "rejectionReason",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",
@@ -304,6 +373,24 @@
 	{
 		"inputs": [],
 		"name": "raiseDispute",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_milestoneIndex",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_reason",
+				"type": "string"
+			}
+		],
+		"name": "rejectMilestone",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"

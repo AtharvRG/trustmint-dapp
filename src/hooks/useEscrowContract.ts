@@ -1,7 +1,6 @@
 // src/hooks/useEscrowContract.ts
-
 import { useState, useEffect, useCallback } from 'react';
-import { Contract, formatEther, parseEther } from 'ethers';
+import { Contract, formatEther, parseEther, Result } from 'ethers';
 import { useWeb3 } from './useWeb3';
 import EscrowABI from '../contracts/Escrow.json';
 import { EscrowDetails, Milestone } from '../types/escrow';
@@ -21,22 +20,22 @@ export const useEscrowContract = (contractAddress: string | undefined) => {
       try {
         console.log(`Attempt ${i + 1} to fetch details for ${await instance.getAddress()}`);
         
-        // ⭐ --- THE FINAL, PERFECTED PARSING LOGIC --- ⭐
         const contractData = await instance.getContractDetails();
         const milestoneCount = await instance.getMilestoneCount();
 
         const milestones: Milestone[] = [];
         for (let j = 0; j < Number(milestoneCount); j++) {
-          const m = await instance.getMilestone(j);
+          const m: Result = await instance.getMilestone(j);
+          
           milestones.push({
-            description: m.description,
-            amount: formatEther(m.amount),
-            state: Number(m.state),
-            ipfsCid: m.ipfsCid,
+            description: m[0],
+            amount: formatEther(m[1]),
+            state: Number(m[2]),
+            ipfsCid: m[3],
+            rejectionReason: m[4]
           });
         }
 
-        // We now access the returned values by their index for absolute certainty.
         setDetails({
           client: contractData[0],
           freelancer: contractData[1],
@@ -51,7 +50,7 @@ export const useEscrowContract = (contractAddress: string | undefined) => {
         return;
 
       } catch (e) {
-        console.warn(`Attempt ${i + 1} failed. Retrying in ${delay}ms...`);
+        console.warn(`Attempt ${i + 1} failed. Retrying in ${delay}ms...`, e);
         if (i === retries - 1) {
           throw e;
         }
@@ -60,7 +59,6 @@ export const useEscrowContract = (contractAddress: string | undefined) => {
     }
   }, []);
 
-  // ... (The rest of the hook is identical)
   useEffect(() => {
     const initialize = async () => {
       if (provider && signer && contractAddress) {
@@ -77,13 +75,11 @@ export const useEscrowContract = (contractAddress: string | undefined) => {
         }
       } else {
         setIsLoading(false);
-        if(!provider) {
-          console.warn("Initialization skipped: Provider not available.");
-        }
       }
     };
     initialize();
   }, [provider, signer, contractAddress, fetchDetailsWithRetry]);
+
   const handleAction = async (actionName: string, ...args: unknown[]) => {
     if (!contract) return;
     const statusKey = typeof args[0] === 'number' ? `${actionName}-${args[0]}` : actionName;
@@ -96,12 +92,24 @@ export const useEscrowContract = (contractAddress: string | undefined) => {
     } catch (e) {
       console.error(`Error during action '${actionName}':`, e);
       setActionStatus(prev => ({ ...prev, [statusKey]: 'error' }));
+      throw e;
     }
   };
+
   const fundContract = async () => { if (!details) return; await handleAction('fund', { value: parseEther(details.totalAmount) }); };
   const approveMilestone = async (index: number) => { await handleAction('approveMilestone', index); };
   const submitWork = async (index: number, ipfsCid: string) => { await handleAction('submitWork', index, ipfsCid); };
+  const acceptAssignment = async () => { await handleAction('acceptAssignment'); };
+  const declineAssignment = async () => { await handleAction('declineAssignment'); };
+  const rejectMilestone = async (index: number, reason: string) => { await handleAction('rejectMilestone', index, reason); };
+
   const isClient = userAddress?.toLowerCase() === details?.client?.toLowerCase();
   const isFreelancer = userAddress?.toLowerCase() === details?.freelancer?.toLowerCase();
-  return { details, isLoading, error, actionStatus, fundContract, approveMilestone, submitWork, isClient, isFreelancer };
+
+  return { 
+    details, isLoading, error, actionStatus,
+    fundContract, approveMilestone, submitWork,
+    acceptAssignment, declineAssignment, rejectMilestone,
+    isClient, isFreelancer
+  };
 };
