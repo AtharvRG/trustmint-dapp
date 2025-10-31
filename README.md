@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./public/logo.svg" alt="TrustMint Logo" width="200" />
+  <img src="./public/logo.svg" alt="TrustMint Logo" width="100" height="100" />
 </div>
 
 <h1 align="center">TrustMint</h1>  
