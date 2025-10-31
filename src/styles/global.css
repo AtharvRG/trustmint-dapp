@@ -1,30 +1,46 @@
 /* src/styles/global.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Clash+Display:wght@600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * ========================================================================
+ * Digital Artisan's Touch: A Foundational Style Reset & Enhancement
+ * ========================================================================
+ */
+
 @layer base {
   body {
     @apply bg-dark-primary text-text-primary antialiased;
+    /* A subtle, dynamic background adds depth and sophistication. */
+    background-image: radial-gradient(circle at 10% 10%, rgba(74, 222, 128, 0.05), rgba(74, 222, 128, 0) 25%),
+                      radial-gradient(circle at 90% 80%, rgba(129, 140, 248, 0.05), rgba(129, 140, 248, 0) 25%);
+  }
+
+  /* Setting the default font for UI text and applying our display font for headings */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-text-primary;
   }
 }
 
-/* For custom scrollbar styling - a subtle but premium touch */
+/* Custom scrollbar styling for a completely branded, premium feel. */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1F2937;
+  background: #111827; /* dark-primary */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #374151;
+  background: #374151; /* border color */
   border-radius: 4px;
+  transition: background 0.2s ease-in-out;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4ADE80;
+  background: #4ADE80; /* brand-primary */
 }

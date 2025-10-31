@@ -1,5 +1,6 @@
 // src/components/common/Button.tsx
 import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { motion } from 'framer-motion';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
@@ -9,9 +10,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = ({ children, variant = 'primary', isLoading = false, ...props }: ButtonProps) => {
   const baseStyles = `
-    font-bold py-2 px-6 rounded-md transition-all duration-300 ease-in-out
+    font-bold py-2.5 px-6 rounded-md transition-all duration-300 ease-in-out
     focus:outline-none focus:ring-2 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed
-    flex items-center justify-center
+    flex items-center justify-center text-sm
   `;
 
   const variantStyles = {
@@ -29,7 +30,14 @@ const Button = ({ children, variant = 'primary', isLoading = false, ...props }: 
   };
 
   return (
-    <button className={`${baseStyles} ${variantStyles[variant]}`} disabled={isLoading} {...props}>
+    <motion.button
+      className={`${baseStyles} ${variantStyles[variant]}`}
+      disabled={isLoading}
+      whileHover={{ scale: 1.05, y: -2 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+      {...props}
+    >
       {isLoading ? (
         <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -38,7 +46,7 @@ const Button = ({ children, variant = 'primary', isLoading = false, ...props }: 
       ) : (
         children
       )}
-    </button>
+    </motion.button>
   );
 };
 
