@@ -71,7 +71,7 @@ Follow these instructions to set up and run the project locally for development 
 
 1.  **Clone the Repository**
     ```sh
-    git clone https://github.com/your-username/trustmint-dapp.git
+    git clone https://github.com/AtharvRG/trustmint-dapp.git
     cd trustmint-dapp
     ```
 
